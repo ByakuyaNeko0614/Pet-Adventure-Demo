@@ -80,13 +80,13 @@ v13 新冒險的寵物會自動使用種族能力。貓的夜視減少森林膽�
 
 1. 建立空白 Google 試算表，從網址取得 `/d/` 與下一個 `/` 之間的 ID。
 2. 執行 `npm ci` 和 `npm run build:gas`。在新的 Apps Script 專案匯入 `dist/gas/` 裡的所有 `.gs` 與 `.html`，並替換 `appsscript.json`。可使用 clasp 推送建置目錄，或透過 Apps Script 編輯器建立同名檔案。若使用標準 Google Cloud 專案，也要啟用 Sheets API。
-3. 在 Apps Script 的「專案設定 → 指令碼屬性」設定 `SPREADSHEET_ID` 和 `OWNER_EMAIL`。由部署者在編輯器執行 `initializeGame_` 並授權，建立 `Accounts`、`Players`、`Pets`、`Maps`、`Inventory` 與 `AdventureLogs`。
+3. 在 Apps Script 的「專案設定 → 指令碼屬性」設定 `SPREADSHEET_ID` 和 `OWNER_EMAIL`。由部署者在編輯器執行 `initializeGame` 並授權，建立 `Accounts`、`Players`、`Pets`、`Maps`、`Inventory` 與 `AdventureLogs`。
 4. 在「部署 → 新增部署」選擇網頁應用程式，執行身分選「我」，存取權選可讓遊戲受眾開啟網址的選項。如果要讓沒有 Google 帳號的人登入，需選「任何人」。部署介面會依 Google 帳號的管理員政策提供選項。試算表維持私人。
 5. 開啟部署網址並建立兩個測試帳號。以其中一個帳號孵蛋，確認第二個仍從第一顆蛋開始。登出後再次登入第一個帳號，確認存檔能讀回。之後修改程式需重新建置、匯入並更新部署版本。
 
 帳號名稱允許 3–24 個文字、數字、底線或連字號，英文不分大小寫。密碼長度是 15–128 個字元，以獨立鹽值及 PBKDF2-HMAC-SHA256 驗證。每次存檔都依有效登入取得玩家 ID。登入狀態在同一瀏覽器分頁可跨遊戲頁使用，最長七天。尚未提供自助找回密碼。
 
-若用原本的單人版試算表，先備份一次。初始化會補上 `Accounts` 和地圖的玩家欄位。從遊戲註冊接收帳號後，先不要用該帳號孵蛋或更動進度。在指令碼屬性填 `LEGACY_TARGET_USERNAME`，再由擁有者從編輯器執行 `migrateLegacySave_`。這會將舊雲端存檔移到該帳號。本機 Demo 存檔仍由瀏覽器保存。
+若用原本的單人版試算表，先備份一次。初始化會補上 `Accounts` 和地圖的玩家欄位。從遊戲註冊接收帳號後，先不要用該帳號孵蛋或更動進度。在指令碼屬性填 `LEGACY_TARGET_USERNAME`，再由擁有者從編輯器執行 `migrateLegacySave`。這會將舊雲端存檔移到該帳號。本機 Demo 存檔仍由瀏覽器保存。
 
 官方參考：[Apps Script 網頁應用程式](https://developers.google.com/apps-script/guides/web) · [clasp 匯入部署](https://developers.google.com/apps-script/guides/clasp) · [Advanced Sheets Service](https://developers.google.com/apps-script/advanced/sheets)。
 

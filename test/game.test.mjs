@@ -1283,7 +1283,7 @@ test('Sheets 以測試替身驗證登入、玩家隔離、舊存檔及原子結�
     }) }
   });
   const api = vm.runInContext(core + '\n' + ['SheetsStore', 'Accounts', 'Code'].map(name => source(`gas/${name}.gs`)).join('\n') +
-    '\n({ gameApi, accountApi, migrateLegacySave_, TABLES, ACCOUNT_FIELDS })', context);
+    '\n({ gameApi, accountApi, migrateLegacySave, TABLES, ACCOUNT_FIELDS })', context);
   for (const table of tables) rows[table].push(plain(api.TABLES[table]));
   accounts.push(plain(api.ACCOUNT_FIELDS));
   const password = 'mock account long password';
@@ -1303,10 +1303,10 @@ test('Sheets 以測試替身驗證登入、玩家隔離、舊存檔及原子結�
   rows.Players.push(['owner', 0, '', Rules.startingCoins, 0, '', '']);
   rows.Maps.push(['legacy-map', 'legacy-seed', 'easy', 15, '[]', 0, 1, 12, time]);
   assert.equal(read().data.maps.length, 0);
-  assert.match(api.migrateLegacySave_(), /已轉移/);
+  assert.match(api.migrateLegacySave(), /已轉移/);
   assert.equal(read().data.maps[0].id, 'legacy-map');
   assert.equal(read(second.token).data.maps.length, 0);
-  assert.match(api.migrateLegacySave_(), /沒有待轉移/);
+  assert.match(api.migrateLegacySave(), /沒有待轉移/);
   const egg = send('incubate', {}).value;
   assert.equal(read().data.egg.name, undefined);
   assert.equal(read(second.token).data.egg, null);
@@ -1347,7 +1347,7 @@ test('Sheets 以測試替身驗證登入、玩家隔離、舊存檔及原子結�
   send('deleteLog', { id: active.id });
   assert.equal(rows.AdventureLogs.length, 1);
   owner = 'other@example.test';
-  assert.throws(() => api.migrateLegacySave_(), /擁有者/);
+  assert.throws(() => api.migrateLegacySave(), /擁有者/);
   api.accountApi('logout', { token: first.token });
   assert.throws(() => read(), /重新登入/);
   const signedIn = api.accountApi('login', { username: '阿栗玩家', password });

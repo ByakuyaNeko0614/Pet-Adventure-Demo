@@ -24,7 +24,7 @@ const crypto = await build({
     export const passwordHash = (password, salt, c) =>
       bytesToHex(pbkdf2(sha256, bytes(password), bytes(salt), { c, dkLen: 32 }));
   ` },
-  bundle: true, platform: 'browser', format: 'iife', globalName: 'AccountCrypto',
+  bundle: true, platform: 'browser', format: 'iife', target: 'es2020', globalName: 'AccountCrypto',
   minify: true, write: false
 });
 const license = await read('node_modules/@noble/hashes/LICENSE');

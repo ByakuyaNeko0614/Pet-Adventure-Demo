@@ -34,7 +34,7 @@ function gameApi(method, payload, token) {
 }
 
 // Run from the Apps Script editor after setting SPREADSHEET_ID and OWNER_EMAIL.
-function initializeGame_() {
+function initializeGame() {
   verifyOwner_();
   return withGameLock_(() => {
     const book = SpreadsheetApp.openById(spreadsheetId_());
@@ -56,7 +56,7 @@ function initializeGame_() {
 }
 
 // Register the destination account first, then run this from the editor.
-function migrateLegacySave_() {
+function migrateLegacySave() {
   verifyOwner_();
   return withGameLock_(() => {
     const username = PropertiesService.getScriptProperties().getProperty('LEGACY_TARGET_USERNAME');
