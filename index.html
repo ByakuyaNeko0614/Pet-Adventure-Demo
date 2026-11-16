@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="孵化你的第一位夥伴，帶牠走進霧谷尋寶。">
+  <meta name="theme-color" content="#223c30">
+  <title>寵物尋寶｜Pet Adventure Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, "Microsoft JhengHei", sans-serif;
+      color: #263b31;
+      background: #e7e8d8;
+    }
+    main {
+      min-height: 100svh;
+      display: grid;
+      align-items: center;
+      padding: clamp(1rem, 7vw, 6rem);
+      background: linear-gradient(90deg, #142b21b3, #142b2129),
+        #43624e url("web/assets/cozy-cottage-v2.jpg") center / cover no-repeat;
+    }
+    .entry {
+      width: min(100%, 31rem);
+      padding: clamp(1.6rem, 5vw, 3rem);
+      border: 1px solid #e2dcca;
+      border-radius: 1.375rem;
+      background: #fffdf4;
+      box-shadow: 0 1.4rem 3rem #17291e4a;
+    }
+    h1 { margin: 0; font-size: clamp(2.3rem, 8vw, 4.5rem); line-height: 1.1; }
+    p { margin: 1rem 0 1.4rem; line-height: 1.7; }
+    a {
+      display: inline-block;
+      padding: .78rem 1.45rem;
+      border-radius: .65rem;
+      font-weight: 700;
+      background: #244c3d;
+      color: #fffdf4;
+      text-decoration: none;
+    }
+    a:hover { background: #19382d; }
+    a:focus-visible { outline: 3px solid #986719; outline-offset: 4px; }
+    .note { margin: .85rem 0 0; color: #556457; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="entry" aria-labelledby="title">
+      <h1 id="title">寵物尋寶</h1>
+      <p>孵化你的第一位夥伴，帶牠走進霧谷尋寶。</p>
+      <a href="https://script.google.com/macros/s/AKfycbwLmvpAKWny5Tdf8DYRKeYS_QJv7KVJfIP_qTuOx3ZUA7KibOgCOVthRt9VaVdFOJ-x/exec">開始遊戲</a>
+      <p class="note">進入後可註冊，或登入接續你的存檔。</p>
+    </section>
+  </main>
+</body>
+</html>
