@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-Hant" data-mode="demo">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f5ec">
+  <title>寵物窩｜寵物尋寶</title>
+  <link rel="stylesheet" href="web/style.css">
+</head>
+<body data-page="hatch">
+  <header id="site-header"></header>
+  <main class="shell">
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <section class="home-heading"><div><span class="eyebrow">MOSS & PAWS / 霧谷小屋</span><h1>歡迎回家。</h1><p>牠們有自己的小日子，也在等你加入。</p></div><div class="actions"><a class="button" id="go-to-hatch" href="nursery.html">前往孵化室</a></div></section>
+    <section class="home-audio-bar" aria-label="小屋聲音設定"><div><button id="home-sound" aria-pressed="false">♫ 開啟小屋聲音</button><span id="home-audio-status" role="status"></span></div><details><summary>音量與偏好</summary><label><input type="checkbox" id="home-music" checked>背景音樂</label><label><input type="checkbox" id="home-effects" checked>生活音效</label><label>音量 <input id="home-volume" type="range" min="0" max="100" value="30"></label></details></section>
+    <section class="home-room-bar" aria-label="家園房間">
+      <div id="home-rooms" class="home-rooms" aria-label="切換房間"></div>
+      <p id="home-room-note" class="fine-print"></p>
+      <button class="button" id="home-room-unlock" type="button" hidden></button>
+    </section>
+    <section class="home-layout" aria-label="寵物生活空間">
+      <div class="home-world" id="home-world">
+        <div class="room-window"><i></i><span>☀</span></div><div class="room-picture">HOME<br>sweet home</div><div class="room-plant">♧</div>
+        <div class="room-floor"></div><div class="room-rug"></div>
+        <button class="home-place bed-place" id="home-bed" aria-label="邀請選中的寵物休息"><span class="bed-cushion"></span><b>柔軟的窩</b></button>
+        <button class="home-place food-place" id="home-food" aria-label="準備飯飯"><span class="food-bowl">● ● ●</span><b>飯飯時間</b></button>
+        <button class="home-place toy-place" id="home-toy" aria-label="邀請選中的寵物玩球"><span class="toy-ball"></span><b>一起玩球</b></button>
+        <button id="home-yarn" class="home-play-ball" type="button" aria-label="滾毛線球給選中的寵物" hidden><span aria-hidden="true"></span></button>
+        <button id="home-firefly-lamp" class="home-place home-souvenir" type="button" aria-label="查看螢火燈的故事" hidden><b>🏮 螢火燈</b></button>
+        <div id="home-pets"></div><p id="home-empty">小屋還空著。孵化第一位夥伴，讓這裡熱鬧起來。</p>
+        <span class="room-caption">點點夥伴，看看牠會怎麼回應你。</span>
+      </div>
+      <aside class="home-inspector panel"><span class="eyebrow">此刻的小日子</span><div id="home-status"></div><div id="home-invitations" class="actions home-invitations"><button data-invite="home-food">準備飯飯</button><button data-invite="home-bed">邀請休息</button><button data-invite="home-toy">一起玩球</button></div><div id="home-care" class="actions"></div><div id="home-move" class="home-move" hidden></div><details id="home-tree-details"><summary>牠怎麼決定下一步？</summary><ol id="home-tree"></ol><p class="fine-print">優先照顧需求，再回應邀請。睡飽、吃飽後才會離開；連續摸摸可能讓牠想獨處。</p></details><p class="fine-print">回家每分鐘恢復：體力 +2、膽量 +1、耐心 +1。離線也會恢復，探索中不恢復。搬房間免費。</p><a class="button" id="home-adventure" href="adventure.html">帶夥伴去探險 ↗</a><p id="home-feedback" role="status" aria-live="polite">在這裡，慢慢相處就好。</p></aside>
+    </section>
+    <details class="home-management" id="home-management"><summary>夥伴圖鑑與養成</summary>
+      <section class="panel collection" aria-labelledby="collection-title">
+        <div class="section-kicker">02 / 夥伴圖鑑</div>
+        <div class="section-head"><h2 id="collection-title">我的探險隊</h2><span id="pet-count" class="pill">0 / 24</span></div>
+        <div id="pet-list" class="pet-list"></div>
+        <div id="pet-detail"></div>
+      </section>
+    </details>
+  </main>
+  <footer class="shell footer"><span>霧谷探險隊 · 寵物尋寶</span><span>FIELD NOTES / VOL. 01</span></footer>
+  <script defer src="core/rules.js"></script>
+  <script defer src="core/maze.js"></script>
+  <script defer src="core/decision.js"></script>
+  <script defer src="core/adventure.js"></script>
+  <script defer src="core/store.js"></script>
+  <script defer src="web/repository.js"></script>
+  <script defer src="web/ui.js"></script>
+  <script defer src="core/home.js"></script>
+  <script defer src="web/audio.js"></script>
+  <script defer src="web/home.js"></script>
+  <script defer src="web/hatch.js"></script>
+</body>
+</html>

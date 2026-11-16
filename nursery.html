@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-Hant" data-mode="demo">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>孵化室｜寵物尋寶</title>
+  <link rel="stylesheet" href="web/style.css">
+</head>
+<body data-page="nursery">
+  <header id="site-header"></header>
+  <main class="shell nursery">
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <h1>孵化室</h1>
+    <section class="panel nursery-panel">
+      <div id="hatch-nest" class="hatch-nest">
+        <div class="hatch-egg" role="img" aria-label="放在軟墊與編織窩上的斑點寵物蛋"><span class="egg-crack" aria-hidden="true"></span></div>
+      </div>
+      <div class="nursery-controls">
+        <section id="hatch-offer" hidden>
+          <h2 id="hatch-title">溫暖的孵化窩</h2>
+          <p id="hatch-cost" class="muted"></p>
+          <button class="button" type="button" id="hatch-button">把蛋放進窩</button>
+        </section>
+        <section id="egg-status" hidden>
+          <h2 id="egg-name"></h2>
+          <p id="hatch-stage"></p>
+          <progress id="egg-progress" max="100" value="0" aria-label="孵化進度"></progress>
+          <p id="egg-time"></p>
+          <button class="button" type="button" id="open-egg" hidden>迎接破殼的夥伴</button>
+        </section>
+        <section id="new-pet" hidden>
+          <div id="pet-reveal" aria-live="polite"></div>
+          <form id="hatch-form">
+            <label for="pet-name">幫剛破殼的夥伴取名</label>
+            <input id="pet-name" name="petName" placeholder="例如：栗子" maxlength="40" required autocomplete="off">
+            <button class="button" id="save-new-name">取好名字</button>
+          </form>
+        </section>
+        <p id="incubation-note" class="fine-print">離開頁面，蛋也會繼續孵化。</p>
+        <a id="nursery-home" href="hatch.html">返回寵物窩</a>
+      </div>
+    </section>
+  </main>
+  <script defer src="core/rules.js"></script>
+  <script defer src="core/maze.js"></script>
+  <script defer src="core/decision.js"></script>
+  <script defer src="core/adventure.js"></script>
+  <script defer src="core/store.js"></script>
+  <script defer src="web/repository.js"></script>
+  <script defer src="web/ui.js"></script>
+  <script defer src="web/nursery.js"></script>
+</body>
+</html>

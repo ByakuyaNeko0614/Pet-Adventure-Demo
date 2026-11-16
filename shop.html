@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-Hant" data-mode="demo">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f5ec">
+  <title>商店與背包｜寵物尋寶</title>
+  <link rel="stylesheet" href="web/style.css">
+</head>
+<body data-page="shop">
+  <header id="site-header"></header>
+  <main class="shell">
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <div class="page-title"><div><span class="eyebrow"><span class="pin"></span> 霧谷探險隊　/　03</span><h1>補給小舖</h1><p>帶上探索補給，也別忘了給夥伴一點獎勵。</p></div><span class="title-icon" aria-hidden="true">🏕️</span></div>
+    <div class="shop-layout">
+      <section class="panel">
+        <div class="section-kicker">01 / 補給貨架</div><div class="section-head"><h2>選購道具</h2><span class="pill wallet" id="shop-coins">◉ —</span></div>
+        <div id="catalog" class="catalog"></div>
+      </section>
+      <section class="panel">
+        <div class="section-kicker">02 / 夥伴的行囊</div><h2>我的背包</h2>
+        <div id="inventory"></div>
+        <div id="bag-use" class="bag-use" hidden>
+          <h3 id="bag-use-title"></h3>
+          <label for="training-pet">選擇要使用道具的寵物</label>
+          <select id="training-pet"></select>
+          <p id="bag-use-info" class="fine-print" aria-live="polite"></p>
+          <div class="actions"><button id="confirm-use" class="button" type="button">確認使用</button><button id="cancel-use" type="button">取消</button></div>
+        </div>
+        <p id="bag-result" class="bag-result" role="status" aria-live="polite" tabindex="-1" hidden></p>
+        <p class="muted fine-print">探索補給在出發時裝入行囊，結算時扣除已使用的數量。出發後購買的補給於下一場生效。</p>
+      </section>
+    </div>
+  </main>
+  <footer class="shell footer"><span>霧谷探險隊 · 寵物尋寶</span><span>FIELD NOTES / VOL. 01</span></footer>
+  <script defer src="core/rules.js"></script>
+  <script defer src="core/maze.js"></script>
+  <script defer src="core/decision.js"></script>
+  <script defer src="core/adventure.js"></script>
+  <script defer src="core/store.js"></script>
+  <script defer src="web/repository.js"></script>
+  <script defer src="web/ui.js"></script>
+  <script defer src="web/shop.js"></script>
+</body>
+</html>

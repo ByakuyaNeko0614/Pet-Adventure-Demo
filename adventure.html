@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="zh-Hant" data-mode="demo">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f5ec">
+  <title>迷宮探索｜寵物尋寶</title>
+  <link rel="stylesheet" href="web/style.css">
+</head>
+<body data-page="adventure">
+  <header id="site-header"></header>
+  <main class="shell">
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+    <div class="page-title"><div><span class="eyebrow"><span class="pin"></span> 霧谷探險隊　/　02</span><h1>迷宮探索</h1><p>觀察夥伴的狀態，在關鍵時刻引導牠。</p></div><span class="title-icon" aria-hidden="true">🧭</span></div>
+    <section class="panel setup">
+      <details id="setup-details" open><summary>探索設定與新冒險</summary>
+      <form id="adventure-form">
+        <div class="setup-row">
+          <label>出戰夥伴<select id="pet-select" required></select></label>
+          <label>迷宮難度<select id="difficulty" aria-describedby="difficulty-note"><option value="easy">Easy · 簡單</option><option value="normal">Normal · 普通</option><option value="hard">Hard · 困難</option><option value="expert">Expert · 極限</option></select></label>
+          <button id="start" class="button" disabled>開始探索 <span aria-hidden="true">↗</span></button>
+        </div>
+        <section id="departure-status" class="departure-status" aria-label="出戰夥伴目前狀態" hidden>
+          <div id="departure-resources" class="trail-resources"></div>
+          <p id="departure-ability" class="fine-print"></p>
+          <p id="departure-patience" class="fine-print muted"></p>
+        </section>
+        <p id="difficulty-note" class="fine-print"></p>
+        <p class="muted fine-print">夥伴會自行決定累積寶箱或前往出口，你也能強制更改目標。送達後可收手或繼續冒險；之後失敗，已送達獎勵保留 50%，身上的寶箱失去。</p>
+        <label class="mission-select"><span id="mission-label">本場委託</span><select id="mission"><option value="lantern">帶螢火燈回家 · 尋找遺跡，把紀念品帶回小屋</option><option value="courier">限步快遞 · 快速送達第一箱</option><option value="collector">寶箱獵人 · 送達兩箱</option><option value="careful">平安回家 · 保存資源送達</option></select></label>
+        <details id="seeds"><summary>種子與地圖管理</summary>
+          <label><input type="checkbox" id="fixed-seed">固定地圖（取消勾選時，每次出發都隨機生成新地圖）</label>
+          <div class="seed-row"><label>地圖 Seed<input id="map-seed" placeholder="留空隨機" maxlength="48"></label><label>決策 Seed<input id="decision-seed" placeholder="留空隨機" maxlength="48"></label></div>
+          <p id="current-seeds" class="muted fine-print seed-note" hidden></p>
+          <div class="map-library">
+            <label>已儲存地圖<select id="map-select"></select></label>
+            <div class="actions"><button type="button" id="save-map">儲存地圖</button><button type="button" id="update-map">套用變更</button><button type="button" id="delete-map">刪除地圖</button></div>
+          </div>
+        </details>
+      </form>
+      </details>
+    </section>
+    <div class="exploration">
+      <div class="game-toolbar">
+        <span>空白鍵 暫停／繼續 · 方向鍵 指路 · N 單步</span>
+        <div class="actions">
+          <span id="step-count" class="pill">0 步</span>
+          <span id="run-status" class="pill">待出發</span>
+          <button type="button" id="sound-toggle" aria-pressed="false">開啟聲音</button>
+          <details class="audio-settings"><summary>音量設定</summary><label><input id="music-enabled" type="checkbox" checked>背景音樂</label><label><input id="effects-enabled" type="checkbox" checked>動作音效</label><label>音量 <input id="sound-volume" type="range" min="0" max="100" value="30"></label></details>
+        </div>
+      </div>
+      <section class="panel board-panel" aria-label="霧谷地圖">
+        <div id="board" class="board" tabindex="-1" aria-label="迷宮地圖"><div class="board-placeholder"><span aria-hidden="true">⛰</span><strong>探索即將開始</strong><span>選擇夥伴和難度，展開霧谷地圖。</span></div></div>
+        <div class="trail-hud" id="trail-hud" hidden>
+          <p class="trail-thought" id="trail-thought" hidden></p>
+          <div id="trail-resources" class="trail-resources" aria-label="夥伴狀態"></div>
+        </div>
+      </section>
+      <section class="plan-panel" id="live-plan" aria-label="探索操作與事件">
+        <div class="section-head">
+          <div class="actions" id="play-controls"><button type="button" id="toggle" disabled>繼續</button><button type="button" id="step" disabled>單步</button></div>
+        </div>
+        <div id="plan-body" hidden></div>
+        <div class="trail-notes">
+          <p id="trail-cargo" class="trail-cargo" hidden></p>
+          <div id="game-feedback" class="game-feedback" role="status" aria-live="polite">找到寶箱，帶到任一出口。</div>
+          <details class="terrain-details"><summary>地形圖例</summary><div id="legend" class="legend" aria-label="地形圖例"></div></details>
+        </div>
+        <div id="behavior-controls" class="behavior-controls" hidden></div>
+        <div id="mission-progress" class="mission-progress" hidden></div>
+        <div id="lantern-trail" class="lantern-trail" hidden></div>
+        <div id="run-items" class="actions trail-items"></div>
+        <details class="trail-settings"><summary>速度與方向按鈕</summary>
+          <div id="direction-panel"></div>
+          <label class="speed">每步間隔<select id="speed"><option value="2500">慢速 · 2.5 秒</option><option value="1200" selected>一般 · 1.2 秒</option><option value="650">快速 · 0.65 秒</option></select></label>
+        </details>
+      </section>
+    </div>
+    <section class="panel result-panel" id="result" hidden aria-live="polite"></section>
+    <details class="trail-journal"><summary>事件與冒險紀錄</summary>
+    <div class="hatch-layout lower-layout">
+      <section class="panel"><div class="section-kicker">ACTIVITY</div><h2>探索事件</h2><ol id="event-log" class="events"><li class="muted">目前還沒有事件。</li></ol></section>
+      <section class="panel"><div class="section-kicker">JOURNAL</div><h2>冒險紀錄</h2><div id="history" class="history"></div></section>
+    </div>
+    <details class="trail-analysis"><summary>夥伴與決策詳細資料</summary><section class="panel" id="run-pet"></section><section class="panel" id="decision" hidden></section></details>
+    </details>
+  </main>
+  <footer class="shell footer"><span>霧谷探險隊 · 寵物尋寶</span><span>FIELD NOTES / VOL. 01</span></footer>
+  <script defer src="core/rules.js"></script>
+  <script defer src="core/maze.js"></script>
+  <script defer src="core/decision.js"></script>
+  <script defer src="core/adventure.js"></script>
+  <script defer src="core/store.js"></script>
+  <script defer src="web/repository.js"></script>
+  <script defer src="web/ui.js"></script>
+  <script defer src="web/clock.js"></script>
+  <script defer src="web/audio.js"></script>
+  <script defer src="web/explore.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "pet-treasure-adventure",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node --test",
+    "build:gas": "node tools/build-gas.mjs"
+  },
+  "devDependencies": {
+    "@noble/hashes": "2.2.0",
+    "esbuild": "0.28.2"
+  }
+}
