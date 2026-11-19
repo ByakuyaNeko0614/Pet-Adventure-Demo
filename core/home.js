@@ -29,7 +29,10 @@ var HomeLife = (() => {
       held: 0, touches: 0, sinceTouch: 30, facing: 1, moving: false, speed: 0,
       ...(saved && Number.isFinite(saved.hunger) ? { hunger: Rules.clamp(saved.hunger,0,100), energy: Rules.clamp(saved.energy,0,100), social: Rules.clamp(saved.social ?? 60,0,100) } : {}) };
   }
-  // Priority selector with completion thresholds: needs cannot oscillate each tick.
+  /*
+   * 小屋的行為依需求排列優先順序。開始睡覺或吃飯後，有各自的結束門檻，
+   * 以免數值剛好貼近起始門檻時，每一幀都在兩種行為之間切換。
+   */
   function choose(life, condition, pet) {
     if (pet.away) return 'away';
     if (life.state === 'sleep' && (life.energy < 85 || life.held > 0)) return 'sleep';
@@ -53,6 +56,7 @@ var HomeLife = (() => {
       ball.x += dx / distance * travel; ball.y += dy / distance * travel;
       ball.spin += Math.sign(dx || 1) * travel * 33;
     }
+    // 球停下、寵物也靠近到可觸碰的範圍後，才算拍中並決定下一次滾動。
     const reach = width * .34;
     const facing = ball.x < life.x ? -1 : 1;
     life.target = [ball.x - facing * reach * .7, ball.y + .55];

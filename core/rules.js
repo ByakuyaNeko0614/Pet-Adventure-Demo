@@ -98,6 +98,7 @@ var Rules = (() => {
   const own = (object, key) => typeof key === 'string' && Object.prototype.hasOwnProperty.call(object, key);
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
+  // 由種子產生可重現的亂數。迷宮重建與探索重播都依賴相同的輸入順序。
   function seeded(...parts) {
     let state = 2166136261;
     for (const character of JSON.stringify(parts)) {
@@ -193,7 +194,7 @@ var Rules = (() => {
     if (pet.level === maxLevel) pet.exp = 0;
   }
 
-  // Current resources are independent of permanent capacities. Legacy pets start full.
+  // 目前體力等資源與永久上限分開保存。用經過時間計算在家恢復量，舊資料則從全滿起算。
   function condition(pet, time = new Date().toISOString(), away = false) {
     const prior = pet.condition || { stamina: pet.maxStamina, courage: pet.maxCourage, patience: pet.patience, at: time };
     const minutes = away ? 0 : Math.max(0, (Date.parse(time) - Date.parse(prior.at)) / 60000) || 0;

@@ -40,6 +40,7 @@ function sessionHash_(token) {
   return AccountCrypto.digest(token);
 }
 
+// 憑證交給瀏覽器，帳號表只保存雜湊與到期時間。
 function issueSession_(accounts, index, row) {
   const token = row[0] + '.' + uuidBytes_() + uuidBytes_();
   const now = Date.now();
@@ -51,6 +52,7 @@ function issueSession_(accounts, index, row) {
   return { playerId: row[0], username: row[1], token, expires };
 }
 
+// 雲端一律從已驗證的憑證取得玩家身分，忽略客戶端自行宣稱的玩家 ID。
 function authenticated_(token) {
   if (typeof token !== 'string' || !/^[a-f0-9]{32}\.[a-f0-9]{64}$/.test(token)) throw new Error(SESSION_ERROR);
   const accounts = readAccounts_();

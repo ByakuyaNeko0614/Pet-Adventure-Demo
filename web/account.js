@@ -51,6 +51,7 @@ var Account = (() => {
   } catch {}
   if (pages && details) gate.hidden = true;
 
+  // Pages 呼叫跨站橋接；Apps Script 直接提供舊頁面時，使用內建的 google.script.run。
   function rpc(kind, method, payload) {
     if (pages) return PagesBridge.call(kind, method, payload, kind === 'game' ? token : undefined);
     return new Promise((resolve, reject) => {
@@ -72,6 +73,7 @@ var Account = (() => {
     } catch {}
   }
 
+  // 先設定玩家身分，再啟動依賴玩家資料的頁面。舊頁面的內嵌程式也在此時載入。
   function unlock(details) {
     player = { playerId: details.playerId, username: details.username };
     gate.hidden = true;
@@ -144,6 +146,10 @@ var Account = (() => {
     }
   });
 
+  /*
+   * 有完整且未過期的分頁登入資料時，換頁可直接顯示遊戲。
+   * 舊版若只存了憑證，先向伺服器查一次身分。實際雲端讀寫仍會驗證憑證。
+   */
   async function start() {
     if (details) {
       unlock(details);

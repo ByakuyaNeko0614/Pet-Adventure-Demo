@@ -102,6 +102,7 @@ var UI = (() => {
         render(data);
       }
     }
+    // 背景同步只更新資料版本，保留畫面的輸入能力。正式操作會等待這筆寫入。
     function progress(input) {
       if (!data || busy || progressWrite) return Promise.resolve(false);
       progressWrite = Repository.command('progress', input, data.revision).then(result => {

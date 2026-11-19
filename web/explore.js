@@ -110,6 +110,7 @@ Repository.startPage(() => {
     }
   }
 
+  // 分頁暫存必須和雲端已確認的動作相符，才能用它接續同一場探索。
   function savedActions(ticket) {
     try {
       const stored = JSON.parse(sessionStorage.getItem(checkpointKey));
@@ -580,6 +581,10 @@ Repository.startPage(() => {
     pendingProgress = null;
   }
 
+  /*
+   * 第一個未同步動作啟動計時，其後的動作用最新快照合併。
+   * 前一批仍在傳送時保留下一批，避免移動速度被雲端往返時間綁住。
+   */
   function scheduleProgress() {
     if (progressTimer !== null || syncingProgress || !pendingProgress) return;
     progressTimer = setTimeout(() => {
@@ -593,6 +598,7 @@ Repository.startPage(() => {
     if (app.busy) { scheduleProgress(); return; }
     clearTimeout(progressTimer);
     progressTimer = null;
+    // 取出本批後立刻清空欄位，傳送期間的新動作便能另存成下一批。
     const snapshot = pendingProgress;
     pendingProgress = null;
     syncingProgress = true;
@@ -647,6 +653,7 @@ Repository.startPage(() => {
     }
   }
 
+  // 結算會送出完整動作，取消尚未傳送的批次，避免結算後又寫入舊進度。
   async function settle() {
     if (saving || playback || saved || app.busy || !state || state.status === 'active') return;
     saving = true;

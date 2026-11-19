@@ -20,6 +20,10 @@ var PagesBridge = (() => {
     return false;
   }
 
+  /*
+   * 接受第一個握手前，核對一次性識別、來源網域與 iframe 階層。
+   * 握手成功後鎖定回覆視窗及網域，再靠請求 ID 將回覆交給原本的呼叫者。
+   */
   window.addEventListener('message', event => {
     const active = connection;
     const message = event.data;
@@ -65,6 +69,7 @@ var PagesBridge = (() => {
     return active.ready;
   }
 
+  // 逾時只表示未收到回覆，伺服器可能已處理寫入，因此這裡不會自動重送。
   async function call(kind, method, payload, token) {
     const { source, origin, nonce } = await open();
     const id = crypto.randomUUID();

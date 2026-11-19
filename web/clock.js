@@ -11,6 +11,7 @@ var StepClock = class {
   }
 
   schedule() {
+    // 暫停或調速會換一個世代，已排入事件佇列的舊計時也不會再走一步。
     const generation = this.generation;
     this.timer = this.timers.setTimeout(() => {
       if (!this.running || generation !== this.generation) return;

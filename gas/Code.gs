@@ -27,6 +27,7 @@ function verifyOwner_() {
 
 function gameApi(method, payload, token) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw new Error('無效的資料請求。');
+  // 驗證、讀取和寫入放在同一把鎖內，避免另一筆操作在本次寫回前改動試算表。
   return withGameLock_(() => {
     const playerId = authenticated_(token).row[0];
     const sheets = readSheets_(playerId);

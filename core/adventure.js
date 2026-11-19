@@ -33,6 +33,7 @@ var Adventure = (() => {
       : Rules.maxInterventions - state.interventions;
   }
 
+  // 用出發時保存的規則版本、地圖種子和寵物狀態重建本場探索。
   function create(ticket) {
     if (!Number.isInteger(ticket.rulesVersion) || ticket.rulesVersion < 1 || ticket.rulesVersion > Rules.version) {
       throw new Error('此冒險使用不同版本的遊戲規則。');
@@ -53,6 +54,7 @@ var Adventure = (() => {
       springs: 0, chests: 0, chestCoins: 0, chestItems: {}, used: {}, actions: [], trace: [], events: [] };
   }
 
+  // 同一版本的畫面預覽與實際移動共用下一步決策，直到探索狀態改變。
   function prepare(state) {
     if (state.status !== 'active' || state.encounter) return null;
     if (!state.pending || state.pending.version !== state.version) state.pending = Decision.plan(state);
@@ -159,6 +161,7 @@ var Adventure = (() => {
     return cell;
   }
 
+  // 自動走路和手動指路都從這裡扣除地形消耗，再處理抵達格子的事件。
   function move(state, next, snapshot) {
     const need = Maze.stepCost(state, next.position);
     state.stamina -= need.stamina;
@@ -277,6 +280,9 @@ var Adventure = (() => {
     note(state, `使用${item.name}，${item.stat === 'stamina' ? '體力' : '膽量'} +${amount}。`);
   }
 
+  /*
+   * 重播與雲端存檔驗證共用這段。從本場探索的初始狀態重跑每個動作，得出實際進度。
+   */
   function replay(ticket, actions) {
     const state = create(ticket);
     const maxActions = Rules.difficulties[ticket.difficulty].limit * (ticket.rulesVersion >= 4 ? 10 : 1) + 1 +

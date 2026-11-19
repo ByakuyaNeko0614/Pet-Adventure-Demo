@@ -102,6 +102,10 @@ function encodeRows_(data, previous, time, playerId) {
   };
 }
 
+/*
+ * 將目前玩家的變更合回整份工作表。其他玩家的列照原樣保留，
+ * 已變更的工作表會透過一次 Sheets 批次請求寫入。
+ */
 function writeSheets_(sheets, time) {
   const own = encodeRows_(sheets.data, sheets.rows, time, sheets.playerId);
   const rows = Object.fromEntries(Object.entries(sheets.allRows).map(([table, entries]) => {

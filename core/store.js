@@ -79,6 +79,7 @@ var Store = (() => {
     return map;
   }
 
+  // 出發時保存寵物狀態、補給與種子，作為稍後重播和結算的起點。
   function begin(data, input, environment) {
     if (data.active) throw new Error('請先完成或放棄目前的冒險，消耗會保留。');
     const { id, time } = environment;
@@ -104,6 +105,7 @@ var Store = (() => {
     return data.active;
   }
 
+  // 先重播驗證完整動作，再一次計入消耗與獎勵，最後清除進行中的冒險。
   function settle(data, input, time) {
     const ticket = data.active;
     if (!ticket || ticket.id !== input.id) throw new Error('這場冒險已失效，請重新開啟探索頁。');
@@ -132,6 +134,7 @@ var Store = (() => {
     return log;
   }
 
+  // 客戶端傳的是整段動作。前綴必須跟已保存的進度相同，才能繼續追加。
   function replayProgress(ticket, actions) {
     const prior = ticket.progress || [];
     actions = actions || prior;
@@ -149,6 +152,10 @@ var Store = (() => {
     if (typeof requestId !== 'string' || !/^[a-zA-Z0-9-]{12,64}$/.test(requestId) ||
       !input || typeof input !== 'object' || Array.isArray(input)) throw new Error('無效的請求。');
 
+    /*
+     * 先處理已完成的結算與重送請求，再比對存檔版本。
+     * 儲存成功但回應遺失時，重按結算會取得原有紀錄，避免再發一次獎勵。
+     */
     if (op === 'settle') {
       const previous = data.history.find(log => log.id === input.id);
       if (previous) return { changed: false, value: previous };
@@ -261,6 +268,7 @@ var Store = (() => {
         } else throw new Error('請在養成面板使用這個道具。');
         break;
       }
+      // 平常同步只提交探索進度與目前狀態，補給在結算或放棄時扣除，獎勵由結算發放。
       case 'progress': {
         if (data.active?.id !== input.id) throw new Error('這場冒險已失效。');
         const state = replayProgress(data.active, input.actions);

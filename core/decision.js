@@ -189,8 +189,10 @@ var Decision = (() => {
     return '目前沒有資源可負擔的通往終點路線。';
   }
 
-  // Resource-constrained shortest paths. Keep non-dominated labels so a slightly
-  // longer route which saves courage is not discarded in favour of an unusable one.
+  /*
+   * 同一格可保留多條消耗不同的路。路程較長但省膽量，可能是資源不足時唯一走得通的方案。
+   * 若已有一條路的成本、體力和膽量消耗都不高於它，才淘汰這條路。
+   */
   function affordableRoutes(state, map, actual, stopAtChests = false) {
     const labels = map.cells.map(() => []);
     const root = { position: state.position, stamina: 0, courage: 0, cost: 0, path: [] };
@@ -223,8 +225,7 @@ var Decision = (() => {
     return labels.map(entries => entries.sort((a, b) => a.cost - b.cost)[0] || null);
   }
 
-  // With no complete route, approach a real destination instead of spending
-  // the last resources walking back and forth. A partial route keeps its goal.
+  // 走不到完整路徑時，保留目前目標並找安全的下一步，避免在兩個方向間來回消耗。
   function approach(state, map, kind) {
     const tile = kind === 'lantern' ? 'chest' : kind;
     const [distance, stamina, courage] = Rules.personalities[state.ticket.pet.personality].weights;
@@ -252,7 +253,7 @@ var Decision = (() => {
 
   function deliveryPlan(state) {
     const map = navigationMap(state);
-    // Stable personality preferences avoid oscillation when mood changes en route.
+    // 取固定的性格權重規劃運送路線，避免途中情緒變化使目標反覆更換。
     const weightSet = weights({ ...state, mood: { key: 'normal' } }, () => .5);
     const routes = affordableRoutes(state, map, weightSet.actual);
     const destinations = kind => map.cells.map((cell, position) => ({ cell, position, route: routes[position] }))

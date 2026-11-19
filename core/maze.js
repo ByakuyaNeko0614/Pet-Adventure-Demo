@@ -13,6 +13,7 @@ var Maze = (() => {
     return adjacent.filter(next => cells[next.position] !== 'wall');
   }
 
+  // 從起點逐層搜尋。每格走一步，結果用來比較距離與檢查連通性。
   function bfs(map, start) {
     const distances = Array(map.cells.length).fill(Infinity);
     const queue = [start];
@@ -28,7 +29,7 @@ var Maze = (() => {
     return distances;
   }
 
-  // Search backwards. A predecessor pays the cost of entering the current cell.
+  // 從目的地反向算路徑。前一格必須付出進入目前格子的地形成本。
   function dijkstra(map, target, enterCost, excluded = -1) {
     const distances = Array(map.cells.length).fill(Infinity);
     const settled = new Set();
@@ -71,7 +72,7 @@ var Maze = (() => {
     const layoutVersion = Rules.mapVersion(difficulty, rulesVersion);
     const map = { seed, difficulty, size, start, treasure, cells, ...(layoutVersion ? { rulesVersion: layoutVersion } : {}) };
 
-    // Carve a connected backbone through obstacles, leaving its shape and side routes seeded.
+    // 先打通起點到寶藏的路，再保留種子決定的岔路與地形。
     let x = start;
     let y = 0;
     const endX = treasure % size;

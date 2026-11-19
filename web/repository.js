@@ -9,6 +9,7 @@ var Repository = (() => {
   const id = () => crypto.randomUUID();
   let loading;
 
+  // 快取鍵包含部署位置與玩家 ID，避免登出或切換帳號後顯示上一個人的存檔。
   function snapshotKey() {
     return 'pet-adventure-view:' + Account.cacheKey + ':' + Account.player.playerId;
   }
@@ -68,6 +69,7 @@ var Repository = (() => {
     // 同一分頁的短期快取只加速呈現。伺服器驗證仍用於所有實際讀寫。
     const cached = readSnapshot();
     if (!fresh && cached?.expires > Date.now()) return Promise.resolve(cached.result);
+    // 同一頁若同時要求讀取，共用正在等待的後端請求。
     if (!loading) loading = remote('read', {}).finally(() => { loading = null; });
     return loading;
   }
