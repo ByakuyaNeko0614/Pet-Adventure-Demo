@@ -1,6 +1,6 @@
 'use strict';
 
-(() => {
+Repository.startPage(() => {
   const { byId, node, button, meter } = UI;
   const board = byId('board');
   const playArea = board.closest('main');
@@ -45,6 +45,9 @@
   let controlsKey = '';
   let journalKey = '';
   let departureKey = '';
+  let pendingProgress = null;
+  let progressTimer = null;
+  let syncingProgress = false;
 
   const clock = new StepClock(tick);
   document.addEventListener('account-locked', () => clock.pause(), { once: true });
@@ -110,7 +113,9 @@
   function savedActions(ticket) {
     try {
       const stored = JSON.parse(sessionStorage.getItem(checkpointKey));
-      if (stored?.id === ticket.id && stored.actions.length >= (ticket.progress || []).length) return stored.actions;
+      const confirmed = ticket.progress || [];
+      if (stored?.id === ticket.id && Array.isArray(stored.actions) &&
+          JSON.stringify(stored.actions.slice(0, confirmed.length)) === JSON.stringify(confirmed)) return stored.actions;
     } catch {
       // An unreadable checkpoint can safely fall back to the start of the run.
     }
@@ -119,6 +124,7 @@
 
   function setRun(run, replayLog = null) {
     clock.pause();
+    clearPendingProgress();
     state = run;
     document.body.classList.toggle('exploring', Boolean(run));
     playback = replayLog && { log: replayLog, index: 0 };
@@ -568,7 +574,40 @@
     } else perform(() => Adventure.execute(state, Adventure.prepare(state)));
   }
 
-  async function perform(action) {
+  function clearPendingProgress() {
+    clearTimeout(progressTimer);
+    progressTimer = null;
+    pendingProgress = null;
+  }
+
+  function scheduleProgress() {
+    if (progressTimer !== null || syncingProgress || !pendingProgress) return;
+    progressTimer = setTimeout(() => {
+      progressTimer = null;
+      void syncProgress();
+    }, 1800);
+  }
+
+  async function syncProgress() {
+    if (syncingProgress || !pendingProgress) return;
+    if (app.busy) { scheduleProgress(); return; }
+    clearTimeout(progressTimer);
+    progressTimer = null;
+    const snapshot = pendingProgress;
+    pendingProgress = null;
+    syncingProgress = true;
+    try {
+      if (!await app.progress(snapshot)) pendingProgress ??= snapshot;
+    } catch (error) {
+      // 輸入和探索不等待雲端。完整步驟另存於此分頁，供下次同步驗證。
+      UI.message('探索進度暫存在此分頁，雲端尚未同步：' + error.message, true);
+    } finally {
+      syncingProgress = false;
+      scheduleProgress();
+    }
+  }
+
+  function perform(action) {
     if (app.busy || saving) return;
     if (state?.status !== 'active') return;
     try {
@@ -588,10 +627,13 @@
       else if (state.actions.length > before.actions && ['manual','route'].includes(lastAction)) feedback('已收到你的指令。確認路線後按「繼續」。', 'guide');
       if (state.encounter && !playback) clock.pause();
       pauseIfStuck();
-      if (!playback) {
+      if (!playback && state.actions.length !== before.actions) {
         checkpoint();
-        const progress = await app.commit('progress', { id: state.ticket.id, actions: state.actions });
-        if (!progress.ok) { clock.pause(); renderGame(); return; }
+        // 先重繪畫面，快速連續按鍵會合併到同一筆背景存檔。
+        if (state.status === 'active') {
+          pendingProgress = { id: state.ticket.id, actions: state.actions.slice() };
+          scheduleProgress();
+        }
       }
       if (state.status !== 'active') {
         clock.pause();
@@ -608,6 +650,7 @@
   async function settle() {
     if (saving || playback || saved || app.busy || !state || state.status === 'active') return;
     saving = true;
+    clearPendingProgress();
     renderGame();
     const result = await app.commit('settle', { id: state.ticket.id, actions: state.actions });
     if (result.ok) {
@@ -628,6 +671,7 @@
       return;
     }
     abandonArmedUntil = 0;
+    clearPendingProgress();
     const result = await app.commit('abandon', { id: state.ticket.id, actions: state.actions });
     if (result.ok) {
       checkpoint(null);
@@ -750,7 +794,10 @@
     if (direction && state?.status === 'active' && !playback && !state.encounter) { event.preventDefault(); manual(direction); }
   });
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) clock.pause();
+    if (document.hidden) {
+      clock.pause();
+      void syncProgress();
+    }
     renderGame();
   });
   byId('step').addEventListener('click', tick);
@@ -795,6 +842,10 @@
   app.load().then(result => {
     if (!result.active) return;
     setRun(Adventure.replay(result.active, savedActions(result.active)));
+    if (state.status === 'active' && state.actions.length > (result.active.progress || []).length) {
+      pendingProgress = { id: state.ticket.id, actions: state.actions.slice() };
+      scheduleProgress();
+    }
     if (state.status !== 'active') void settle();
     else {
       feedback(state.ticket.rulesVersion < Rules.version
@@ -803,4 +854,4 @@
       if (state.ticket.rulesVersion >= 12) pauseIfStuck();
     }
   }).catch(error => UI.message(error.message, true));
-})();
+});

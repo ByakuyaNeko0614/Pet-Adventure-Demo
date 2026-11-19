@@ -27,7 +27,7 @@ var UI = (() => {
 
   function header(data) {
     const brand = node('a', 'brand', node('span', 'brand-icon', '✦'), node('span', '', '寵物尋寶', node('small', '', 'PET TREASURE ADVENTURE')));
-    const route = name => Repository.isSheets ? '?page=' + name : name + '.html';
+    const route = name => Repository.isLegacy ? '?page=' + name : name + '.html';
     brand.href = route('hatch');
     const links = Object.entries({ hatch: '寵物窩', nursery: '孵化室', adventure: '迷宮探索', shop: '商店與背包' });
     const nav = node('nav', 'nav', links.map(([key, label]) => {
@@ -68,8 +68,10 @@ var UI = (() => {
   function client(render) {
     let data = null;
     let busy = false;
-    async function load() {
-      const result = await Repository.read();
+    let progressWrite = null;
+    async function load(fresh = false) {
+      const result = await Repository.read({ fresh });
+      if (data && result.data.revision < data.revision) return result;
       data = result.data;
       header(data);
       render(data);
@@ -81,13 +83,15 @@ var UI = (() => {
       message('');
       render(data);
       try {
+        // 正式命令等正在送出的探索進度，再用最新版本寫入，避免兩筆互撞。
+        await progressWrite?.catch(() => {});
         const result = await Repository.command(op, input, data.revision, requestId);
         data = result.data;
         header(data);
         return { ok: true, value: result.value };
       } catch (error) {
         try {
-          await load();
+          await load(true);
         } catch {
           // The original operation error remains visible if reloading also fails.
         }
@@ -98,8 +102,16 @@ var UI = (() => {
         render(data);
       }
     }
+    function progress(input) {
+      if (!data || busy || progressWrite) return Promise.resolve(false);
+      progressWrite = Repository.command('progress', input, data.revision).then(result => {
+        data = result.data;
+        return true;
+      }).finally(() => { progressWrite = null; });
+      return progressWrite;
+    }
     header(null);
-    return { load, commit, get data() { return data; }, get busy() { return busy; } };
+    return { load, commit, progress, get data() { return data; }, get busy() { return busy; } };
   }
 
   const accuracy = (correct, attempts) => attempts ? Math.round(correct / attempts * 100) + '%' : '—';

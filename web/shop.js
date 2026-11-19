@@ -1,6 +1,6 @@
 'use strict';
 
-(() => {
+Repository.startPage(() => {
   const { byId, node, button } = UI;
   const target = byId('training-pet');
   let lastPurchase = null;
@@ -111,4 +111,4 @@
     }
   });
   app.load().catch(error => UI.message(error.message, true));
-})();
+});

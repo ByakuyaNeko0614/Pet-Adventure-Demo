@@ -1,6 +1,6 @@
 'use strict';
 
-(() => {
+Repository.startPage(() => {
   const { byId, node, button, meter } = UI;
   const personalityTips = {
     impatient: '偏好步數少的路，即使要多花體力或膽量；通常帶兩箱就想撤離。',
@@ -142,6 +142,6 @@
   }
 
   const app = UI.client(render);
-  setInterval(() => { if (!document.hidden && !app.busy) app.load().catch(() => {}); }, 15000);
+  setInterval(() => { if (!document.hidden && !app.busy) app.load(true).catch(() => {}); }, Repository.isSheets ? 30000 : 15000);
   app.load().catch(error => UI.message(error.message, true));
-})();
+});

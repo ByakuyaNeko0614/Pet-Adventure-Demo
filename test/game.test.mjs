@@ -1288,6 +1288,13 @@ test('Sheets 以測試替身驗證登入、玩家隔離、舊存檔及原子結�
   accounts.push(plain(api.ACCOUNT_FIELDS));
   const password = 'mock account long password';
   assert.throws(() => api.gameApi('read', {}), /重新登入/);
+  assert.throws(() => api.accountApi('register', {
+    username: '短密碼玩家', password: '太短'
+  }), /3–128/);
+  const shortPasswordPlayer = api.accountApi('register', { username: '短密碼玩家', password: '獨角獸' });
+  api.accountApi('logout', { token: shortPasswordPlayer.token });
+  assert.equal(api.accountApi('login', { username: '短密碼玩家', password: '獨角獸' }).playerId,
+    shortPasswordPlayer.playerId);
   const first = api.accountApi('register', { username: '阿栗玩家', password });
   const second = api.accountApi('register', { username: '第二位玩家', password });
   assert.throws(() => api.accountApi('register', { username: ' 阿栗玩家 ', password }), /有人使用/);

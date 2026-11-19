@@ -1,6 +1,7 @@
 'use strict';
 
-var PetHome = (() => {
+var PetHome;
+Repository.startPage(() => {
   const { byId, node, button, meter } = UI;
   const actors = new Map();
   const sound = new GameSound({theme:'home'});
@@ -308,5 +309,5 @@ var PetHome = (() => {
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
-  return {sync};
-})();
+  PetHome = { sync };
+});

@@ -1,8 +1,32 @@
 'use strict';
 
 var Account = (() => {
+  const pages = location.origin === 'https://byakuyaneko0614.github.io' &&
+    location.pathname.startsWith('/Pet-Adventure-Demo/');
+  if (pages) document.documentElement.dataset.mode = 'pages';
+  if (!pages && document.documentElement.dataset.mode !== 'sheets') return null;
   const expired = '登入已失效，請重新登入。';
-  const key = 'pet-adventure-session:' + new URL(document.baseURI).pathname;
+  // 頁面共用同一個分頁登入狀態，認證憑證只經由存檔橋接送到後端。
+  const key = 'pet-adventure-session:' + (pages ? '/Pet-Adventure-Demo/' : new URL(document.baseURI).pathname);
+  document.body.classList.add('account-locked');
+  document.body.insertAdjacentHTML('afterbegin', `  <section class="account-gate" id="account-gate" aria-labelledby="account-title">
+    <div class="account-card">
+      <span class="brand-icon" aria-hidden="true">✦</span>
+      <h1 id="account-title">寵物尋寶</h1>
+      <p>登入後，回到你自己的寵物窩。</p>
+      <form id="account-form" hidden>
+        <label for="account-username">帳號名稱</label>
+        <input id="account-username" autocomplete="username" maxlength="24" required>
+        <label for="account-password">密碼</label>
+        <input id="account-password" type="password" autocomplete="current-password" minlength="3" maxlength="256" required aria-describedby="account-password-help">
+        <small id="account-password-help">至少 3 個字元。</small>
+        <button class="button" id="account-submit" type="submit">登入</button>
+        <button id="account-mode" type="button">第一次來？建立帳號</button>
+      </form>
+      <p id="account-message" role="status"></p>
+      <a class="button" id="account-return" href="#" hidden>回登入畫面</a>
+    </div>
+  </section>`);
   const gate = document.getElementById('account-gate');
   const form = document.getElementById('account-form');
   const feedback = document.getElementById('account-message');
@@ -11,20 +35,39 @@ var Account = (() => {
   const primary = document.getElementById('account-submit');
   const switchMode = document.getElementById('account-mode');
   const returnLink = document.getElementById('account-return');
-  let token = '', player = null, busy = false, registering = false;
-  try { token = sessionStorage.getItem(key) || ''; } catch {}
+  returnLink.href = location.href;
+  let token = '', details = null, player = null, busy = false, registering = false;
+  const pendingPages = [];
+  const sessionDuration = 7 * 24 * 60 * 60 * 1000;
+  try {
+    const saved = sessionStorage.getItem(key);
+    if (saved?.startsWith('{')) {
+      const parsed = JSON.parse(saved);
+      if (parsed.expires > Date.now() && typeof parsed.token === 'string' && parsed.playerId && parsed.username) {
+        details = parsed;
+        token = parsed.token;
+      }
+    } else token = saved || '';
+  } catch {}
+  if (pages && details) gate.hidden = true;
 
-  function request(method, payload) {
+  function rpc(kind, method, payload) {
+    if (pages) return PagesBridge.call(kind, method, payload, kind === 'game' ? token : undefined);
     return new Promise((resolve, reject) => {
-      google.script.run.withSuccessHandler(resolve)
-        .withFailureHandler(error => reject(new Error(error.message))).accountApi(method, payload);
+      const request = google.script.run.withSuccessHandler(resolve)
+        .withFailureHandler(error => reject(new Error(error.message)));
+      if (kind === 'game') request.gameApi(method, payload, token);
+      else request.accountApi(method, payload);
     });
   }
 
-  function saveToken(value) {
-    token = value;
+  const request = (method, payload) => rpc('account', method, payload);
+
+  function saveSession(value) {
+    details = value;
+    token = value?.token || '';
     try {
-      if (value) sessionStorage.setItem(key, value);
+      if (value) sessionStorage.setItem(key, JSON.stringify(value));
       else sessionStorage.removeItem(key);
     } catch {}
   }
@@ -38,10 +81,14 @@ var Account = (() => {
       script.textContent = source.textContent;
       source.replaceWith(script);
     });
+    for (const start of pendingPages.splice(0)) start();
   }
 
   function lockPage(message) {
-    saveToken('');
+    if (player) {
+      try { sessionStorage.removeItem('pet-adventure-view:' + key + ':' + player.playerId); } catch {}
+    }
+    saveSession(null);
     player = null;
     document.body.classList.add('account-locked');
     document.dispatchEvent(new Event('account-locked'));
@@ -86,7 +133,7 @@ var Account = (() => {
     feedback.textContent = registering ? '正在建立帳號…' : '正在登入…';
     try {
       const details = await request(registering ? 'register' : 'login', { username: username.value, password: password.value });
-      saveToken(details.token);
+      saveSession({ ...details, expires: Number(details.expires) || Date.now() + sessionDuration });
       unlock(details);
     } catch (error) {
       feedback.textContent = error.message;
@@ -98,18 +145,34 @@ var Account = (() => {
   });
 
   async function start() {
+    if (details) {
+      unlock(details);
+      return;
+    }
     if (token) {
       feedback.textContent = '正在確認登入狀態…';
       try {
-        unlock(await request('session', { token }));
+        const verified = await request('session', { token });
+        saveSession({ ...verified, token, expires: Number(verified.expires) || Date.now() + sessionDuration });
+        unlock(verified);
         return;
       } catch (error) {
-        if (isExpired(error)) saveToken('');
+        if (isExpired(error)) saveSession(null);
         feedback.textContent = error.message;
       }
     }
     form.hidden = false;
+    // 填資料的同時就準備第一次連線。已登入的快取換頁無需先連線。
+    if (pages) void PagesBridge.prepare().catch(() => {});
   }
 
-  return { start, logout, requireLogin, get token() { return token; }, get player() { return player; } };
+  function whenReady(start) {
+    if (player) start();
+    else pendingPages.push(start);
+  }
+
+  return { start, whenReady, logout, requireLogin, cacheKey: key, game: (method, payload) => rpc('game', method, payload),
+    get player() { return player; } };
 })();
+
+if (document.documentElement.dataset.mode === 'pages') void Account.start();

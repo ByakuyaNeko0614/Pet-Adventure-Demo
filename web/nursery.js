@@ -1,6 +1,6 @@
 'use strict';
 
-(() => {
+Repository.startPage(() => {
   const {byId, node} = UI;
   const form = byId('hatch-form');
   const field = byId('pet-name');
@@ -97,7 +97,7 @@
   });
   setInterval(updateEgg, 1000);
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && !app.busy && !opening) app.load().catch(error => UI.message(error.message, true));
+    if (!document.hidden && !app.busy && !opening) app.load(true).catch(error => UI.message(error.message, true));
   });
   app.load().catch(error => UI.message(error.message, true));
-})();
+});

@@ -44,10 +44,11 @@ function issueSession_(accounts, index, row) {
   const token = row[0] + '.' + uuidBytes_() + uuidBytes_();
   const now = Date.now();
   const sessions = JSON.parse(row[6] || '[]').filter(session => session.expires > now).slice(-7);
-  sessions.push({ hash: sessionHash_(token), expires: now + SESSION_MS });
+  const expires = now + SESSION_MS;
+  sessions.push({ hash: sessionHash_(token), expires });
   row[6] = JSON.stringify(sessions);
   saveAccount_(accounts, index, row);
-  return { playerId: row[0], username: row[1], token };
+  return { playerId: row[0], username: row[1], token, expires };
 }
 
 function authenticated_(token) {
@@ -92,14 +93,14 @@ function accountApi(method, payload) {
       saveAccount_(accounts, index, row);
       return { signedOut: true };
     }
-    return { playerId: row[0], username: row[1] };
+    return { playerId: row[0], username: row[1], expires: sessions.find(session => session.hash === hash).expires };
   });
   if (method !== 'login' && method !== 'register') throw new Error('不支援的帳號操作。');
 
   const key = usernameKey_(payload.username);
   const password = payload.password;
-  if (typeof password !== 'string' || password.length > 256 || [...password].length < 15 || [...password].length > 128) {
-    throw new Error('密碼請使用 15–128 個字元。');
+  if (typeof password !== 'string' || password.length > 256 || [...password].length < 3 || [...password].length > 128) {
+    throw new Error('密碼請使用 3–128 個字元。');
   }
   const existing = withGameLock_(() => {
     countAttempt_(method, key);

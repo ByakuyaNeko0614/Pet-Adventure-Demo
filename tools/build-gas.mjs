@@ -11,7 +11,7 @@ await mkdir(output, { recursive: true });
 const shared = ['rules', 'maze', 'decision', 'adventure', 'store'];
 const scripts = await Promise.all(shared.map(name => read(`core/${name}.js`)));
 await write('Core.gs', scripts.join('\n\n'));
-await Promise.all(['Code.gs', 'Accounts.gs', 'SheetsStore.gs', 'appsscript.json'].map(name =>
+await Promise.all(['Code.gs', 'Accounts.gs', 'SheetsStore.gs', 'Bridge.html', 'appsscript.json'].map(name =>
   copyFile(new URL(`gas/${name}`, root), new URL(name, output))));
 
 const crypto = await build({
@@ -42,13 +42,13 @@ const imageVars = await Promise.all(imageEntries.map(async asset => {
 }));
 await write('GameStyles.html', '<style>\n:root{' + imageVars.join('') + '}\n' + style + '\n</style>');
 
-const accountMarkup = await read('gas/AccountGate.html');
 const accountScript = await read('web/account.js');
 for (const [page, name] of [['hatch', 'Hatch'], ['nursery', 'Nursery'], ['adventure', 'Adventure'], ['shop', 'Shop']]) {
   let html = (await read(page + '.html')).replace('data-mode="demo"', 'data-mode="sheets"')
     .replace('<head>', '<head>\n  <base href="<?= appUrl ?>" target="_top">')
     .replace(/href="(hatch|nursery|adventure|shop)\.html"/g, 'href="?page=$1"')
-    .replace(`<body data-page="${page}">`, `<body data-page="${page}" class="account-locked">\n${accountMarkup.replace('PAGE_ROUTE', page)}`)
+    .replace(`<body data-page="${page}">`, `<body data-page="${page}" class="account-locked">`)
+    .replace(/  <script defer src="web\/(pages-bridge|account)\.js"><\/script>\r?\n/g, '')
     .replace('<link rel="stylesheet" href="web/style.css">', "<?!= include_('GameStyles') ?>");
   for (const [tag, path] of html.matchAll(/<script defer src="([^"]+)"><\/script>/g)) {
     let source = (await read(path)).replace(/<\/script/gi, '<\\/script');

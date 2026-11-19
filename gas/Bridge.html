@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head><meta charset="utf-8"><title>寵物尋寶存檔服務</title></head>
+<body data-nonce="<?= nonce ?>">
+<script>
+  'use strict';
+  (() => {
+    const origin = 'https://byakuyaneko0614.github.io';
+    const protocol = 'pet-adventure-v1';
+    const nonce = document.body.dataset.nonce;
+    const allowed = { account: ['login', 'register', 'session', 'logout'], game: ['read', 'history', 'command'] };
+    if (window.top === window) return;
+    const send = message => window.top.postMessage({ protocol, nonce, ...message }, origin);
+
+    window.addEventListener('message', event => {
+      // 只服務正式 Pages 視窗。每筆讀寫仍由 Apps Script 驗證伺服器端登入。
+      const message = event.data;
+      if (event.source !== window.top || event.origin !== origin || message?.protocol !== protocol ||
+          message.nonce !== nonce || message.type !== 'request' || typeof message.id !== 'string' ||
+          !Object.prototype.hasOwnProperty.call(allowed, message.kind) ||
+          !allowed[message.kind].includes(message.method)) return;
+      const reply = value => send({ type: 'result', id: message.id, ...value });
+      const request = google.script.run.withSuccessHandler(result => reply({ result }))
+        .withFailureHandler(error => reply({ error: error.message || '存檔服務暫時無法使用。' }));
+      if (message.kind === 'account') request.accountApi(message.method, message.payload);
+      else request.gameApi(message.method, message.payload, message.token);
+    });
+
+    send({ type: 'ready' });
+  })();
+</script>
+</body>
+</html>

@@ -9,7 +9,7 @@ createServer(async (request, response) => {
   const path = new URL(request.url, 'http://localhost').pathname;
   const file = path === '/' ? 'hatch.html' : path.slice(1);
   if (!['GET', 'HEAD'].includes(request.method) ||
-    !/^(?:(?:hatch|nursery|adventure|shop)\.html|(?:core|web)\/[a-z]+\.(?:css|js)|web\/assets\/[a-z0-9-]+\.(?:png|webp|jpg|mp3|wav))$/.test(file)) {
+    !/^(?:(?:index|hatch|nursery|adventure|shop)\.html|(?:core|web)\/[a-z-]+\.(?:css|js)|web\/assets\/[a-z0-9-]+\.(?:png|webp|jpg|mp3|wav))$/.test(file)) {
     response.writeHead(404).end('Not found');
     return;
   }

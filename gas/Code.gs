@@ -1,6 +1,14 @@
 function doGet(event) {
   const pages = { hatch: 'Hatch', nursery: 'Nursery', adventure: 'Adventure', shop: 'Shop' };
   const page = event && event.parameter && event.parameter.page;
+  if (page === 'bridge') {
+    const nonce = event.parameter.nonce;
+    if (!/^[a-f0-9-]{36}$/.test(nonce || '')) return HtmlService.createHtmlOutput('無效的連線識別。');
+    const bridge = HtmlService.createTemplateFromFile('Bridge');
+    bridge.nonce = nonce;
+    // 只有無介面的 RPC 頁需要嵌入，正式遊戲仍由 GitHub Pages 顯示。
+    return bridge.evaluate().setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
   const template = HtmlService.createTemplateFromFile(Rules.own(pages, page) ? pages[page] : pages.hatch);
   template.appUrl = ScriptApp.getService().getUrl();
   return template.evaluate().setTitle('寵物尋寶').addMetaTag('viewport', 'width=device-width, initial-scale=1');
@@ -29,7 +37,7 @@ function gameApi(method, payload, token) {
     const time = new Date().toISOString();
     const mutation = Store.mutate(data, payload, { id: Utilities.getUuid(), time });
     if (mutation.changed) writeSheets_(sheets, time);
-    return { data: Store.view(data), value: mutation.value };
+    return { data: Store.view(data), active: data.active, value: mutation.value };
   });
 }
 
